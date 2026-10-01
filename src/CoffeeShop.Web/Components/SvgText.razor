@@ -1,0 +1,11 @@
+<text @attributes="Attributes">@ChildContent</text>
+
+@code {
+    // Razor treats a literal <text> tag inside @if/@foreach blocks as its own escape syntax,
+    // so SVG labels go through this component instead.
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? Attributes { get; set; }
+}

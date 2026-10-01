@@ -1,0 +1,278 @@
+@page "/"
+@using System.Globalization
+@implements IDisposable
+
+<PageTitle>Coffee Shop Rush: why your orders (almost) never get lost</PageTitle>
+
+<header class="hero">
+    <p class="eyebrow">An interactive story about software that doesn't lose your stuff</p>
+    <h1>Coffee Shop Rush</h1>
+    <p class="lede">
+        Every time you pay for something online, a cafe like this is running behind the scenes.
+        Crash the barista and watch what happens to the orders. Then turn on the safety net and try again.
+    </p>
+</header>
+
+@if (_tour >= 0)
+{
+    <section class="tour" aria-live="polite">
+        <div class="tour-dots" aria-hidden="true">
+            @for (var i = 0; i < 5; i++)
+            {
+                <span class="@(i <= _tour ? "on" : "")"></span>
+            }
+        </div>
+        @switch (_tour)
+        {
+            case 0:
+                <p><strong>Welcome!</strong> Customers order at the counter, and one barista makes every drink. For now, everything runs smoothly. Ready to break something?</p>
+                <div class="tour-actions">
+                    <button class="btn primary" @onclick="() => _tour = 1">Start the tour</button>
+                    <button class="link" @onclick="() => _tour = -1">Skip, let me play</button>
+                </div>
+                break;
+            case 1:
+                <p><strong>Step 1.</strong> Press <em>Crash the barista</em> while orders are being made. The safety net is off, so orders are only shouted across the shop.</p>
+                break;
+            case 2:
+                <p><strong>Ouch.</strong> Orders vanished, and customers who asked again got a second drink they didn't need. Now flip the <em>safety net</em> switch on. It means every order gets written on a paper ticket first.</p>
+                break;
+            case 3:
+                <p><strong>Step 3.</strong> With the safety net on, press <em>Crash the barista</em> again. Watch the tickets stay on the rail.</p>
+                break;
+            default:
+                <p><strong>That's the whole idea.</strong> Real systems that never lose your payment or your order write it down first, then do the work. Keep playing, or read how it maps to real engineering below.</p>
+                <div class="tour-actions">
+                    <button class="btn" @onclick="() => _tour = -1">Close the tour</button>
+                </div>
+                break;
+        }
+    </section>
+}
+else
+{
+    <p class="tour-replay"><button class="link" @onclick="() => _tour = 0">Replay the guided tour</button></p>
+}
+
+<section class="stage">
+    <div class="scene-card">
+        <CafeScene Shop="_shop" />
+    </div>
+
+    <aside class="panel" aria-label="Controls">
+        <div class="control">
+            <button class="switch @(_shop.Config.SafetyNet ? "on" : "") @(_tour == 2 ? "nudge" : "")"
+                    role="switch" aria-checked="@(_shop.Config.SafetyNet ? "true" : "false")" @onclick="ToggleNet">
+                <span class="knob"></span>
+            </button>
+            <div>
+                <strong>Paper-ticket safety net</strong>
+                <span class="hint">@(_shop.Config.SafetyNet ? "ON: every order is pinned to the rail before anything else happens." : "OFF: the cashier just shouts the order across the shop.")</span>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn danger @(_tour == 1 || _tour == 3 ? "nudge" : "")" @onclick="Crash" disabled="@_shop.BaristaCrashed">
+                Crash the barista
+            </button>
+            <button class="btn" @onclick="RushHour">Rush hour (+5 customers)</button>
+        </div>
+
+        <div class="control column">
+            <label for="rate">Customers per minute: <strong>@_rate.ToString("0", CultureInfo.InvariantCulture)</strong></label>
+            <input id="rate" type="range" min="0" max="40" step="1" value="@_rate" @oninput="OnRate" />
+        </div>
+
+        <div class="control column">
+            <span class="label-text">Speed</span>
+            <div class="seg" role="group" aria-label="Speed">
+                @foreach (var s in new[] { 1, 2, 3 })
+                {
+                    var speed = s;
+                    <button class="@(_speed == speed ? "on" : "")" @onclick="() => _speed = speed">@(speed)x</button>
+                }
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn ghost" @onclick="() => _paused = !_paused">@(_paused ? "Resume" : "Pause")</button>
+            <button class="btn ghost" @onclick="Reset">Start over</button>
+        </div>
+    </aside>
+</section>
+
+<section class="scoreboard" aria-label="Scoreboard" aria-live="polite">
+    <div class="tile good">
+        <span class="tile-label">Drinks served</span>
+        <b class="pop" @key="_stats.CustomersServed">@_stats.CustomersServed</b>
+    </div>
+    <div class="tile bad">
+        <span class="tile-label">Orders lost</span>
+        <b class="pop" @key="_stats.OrdersLost">@_stats.OrdersLost</b>
+    </div>
+    <div class="tile warn">
+        <span class="tile-label">Wasted drinks</span>
+        <b class="pop" @key="_stats.WastedDrinks">@_stats.WastedDrinks</b>
+    </div>
+    <div class="tile">
+        <span class="tile-label">Still waiting</span>
+        <b>@_stats.StillWaiting</b>
+    </div>
+    <div class="tile">
+        <span class="tile-label">Average wait</span>
+        <b>@(_stats.CustomersServed == 0 ? "-" : _stats.AverageWaitSeconds.ToString("0.0", CultureInfo.InvariantCulture) + "s")</b>
+    </div>
+</section>
+
+<section class="feed" aria-label="What just happened">
+    <h2>What just happened</h2>
+    @if (_events.Count == 0)
+    {
+        <p class="empty">Nothing yet. Orders will start showing up in a moment.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var e in _events)
+            {
+                <li @key="e" class="@e.Kind.ToString().ToLowerInvariant()">
+                    <span class="dot" aria-hidden="true"></span>
+                    <span class="msg">@e.Message</span>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+<section class="explain">
+    <h2>What this really is</h2>
+    <p>
+        This cafe is a small, honest model of how real software handles money and orders.
+        The simulation runs in your browser, and the same ideas protect payments, bookings and orders everywhere.
+    </p>
+    <div class="map">
+        <div><b>The cashier</b><span>A request from your phone or browser</span></div>
+        <div><b>Shouting across the shop</b><span>A message sent without a receipt. If nobody is listening, it is gone</span></div>
+        <div><b>The barista</b><span>A background worker. Workers crash and restart all the time</span></div>
+        <div><b>The ticket rail</b><span>A durable queue (the <em>transactional outbox</em> pattern). Write it down first, then do the work</span></div>
+        <div><b>Skipping made tickets</b><span>An <em>idempotent</em> consumer: doing the same thing twice has the same effect as once</span></div>
+        <div><b>The impatient customer</b><span>A client that retries. Retries are normal, so the system must expect them</span></div>
+    </div>
+    <p class="source">
+        Built with C# and .NET 8. The simulation engine is plain C# with
+        <a href="https://github.com/hamzamehmood46/coffee-shop-rush/blob/main/tests/CoffeeShop.Engine.Tests/ShopTests.cs">18 automated tests</a>,
+        and the page is Blazor WebAssembly, so there is no server.
+        The real versions of these patterns are in my
+        <a href="https://github.com/hamzamehmood46/outbox-pattern-dotnet">Transactional Outbox</a> and
+        <a href="https://github.com/hamzamehmood46/orderflow-dotnet">OrderFlow</a> projects.
+    </p>
+</section>
+
+<div class="dock" role="group" aria-label="Quick controls">
+    <button class="switch @(_shop.Config.SafetyNet ? "on" : "")" role="switch" aria-label="Safety net"
+            aria-checked="@(_shop.Config.SafetyNet ? "true" : "false")" @onclick="ToggleNet">
+        <span class="knob"></span>
+    </button>
+    <span class="dock-label">Safety net @(_shop.Config.SafetyNet ? "ON" : "OFF")</span>
+    <button class="btn danger" @onclick="Crash" disabled="@_shop.BaristaCrashed">Crash the barista</button>
+</div>
+
+<footer class="foot">
+    <span>Made by <a href="https://hamzamehmood46.github.io">Hamza Mehmood</a>, a .NET software engineer</span>
+    <span><a href="https://github.com/hamzamehmood46/coffee-shop-rush">Source on GitHub</a></span>
+</footer>
+
+@code {
+    private Shop _shop = NewShop(false, 14);
+    private ShopStats _stats = new(0, 0, 0, 0, 0);
+    private IReadOnlyList<ShopEvent> _events = Array.Empty<ShopEvent>();
+    private CancellationTokenSource? _cts;
+    private bool _paused;
+    private int _speed = 1;
+    private double _rate = 14;
+    private int _tour;
+
+    protected override void OnInitialized()
+    {
+        _cts = new CancellationTokenSource();
+        _ = RunAsync(_cts.Token);
+    }
+
+    private async Task RunAsync(CancellationToken token)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(50));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                if (!_paused)
+                {
+                    _shop.Tick(0.05 * _speed);
+                }
+
+                _stats = _shop.Stats;
+                _events = _shop.RecentEvents(6);
+                StateHasChanged();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // the page was closed
+        }
+    }
+
+    private static Shop NewShop(bool safetyNet, double rate) =>
+        new(new ShopConfig { SafetyNet = safetyNet, OrdersPerMinute = rate });
+
+    private void ToggleNet()
+    {
+        _shop.Config.SafetyNet = !_shop.Config.SafetyNet;
+        if (_tour == 2 && _shop.Config.SafetyNet)
+        {
+            _tour = 3;
+        }
+    }
+
+    private void Crash()
+    {
+        _shop.CrashBarista();
+        if (_tour == 1)
+        {
+            _tour = _shop.Config.SafetyNet ? 4 : 2;
+        }
+        else if (_tour == 3 && _shop.Config.SafetyNet)
+        {
+            _tour = 4;
+        }
+    }
+
+    private void RushHour()
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            _shop.PlaceOrder();
+        }
+    }
+
+    private void OnRate(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        {
+            _rate = value;
+            _shop.Config.OrdersPerMinute = value;
+        }
+    }
+
+    private void Reset()
+    {
+        _shop = NewShop(_shop.Config.SafetyNet, _rate);
+        _stats = _shop.Stats;
+        _events = Array.Empty<ShopEvent>();
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

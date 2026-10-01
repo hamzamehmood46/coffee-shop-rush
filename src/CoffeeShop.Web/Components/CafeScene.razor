@@ -1,0 +1,328 @@
+@using System.Globalization
+
+<svg class="scene @(Shop.BaristaCrashed ? "is-crashed" : "") @(Shop.Config.SafetyNet ? "net-on" : "net-off")"
+     viewBox="0 0 1000 440" role="img" aria-label="@Description()">
+    <defs>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff6e6" />
+            <stop offset="1" stop-color="#ffe8c8" />
+        </linearGradient>
+        <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e9cfa8" />
+            <stop offset="1" stop-color="#dcbd8f" />
+        </linearGradient>
+    </defs>
+
+    <!-- room -->
+    <rect x="0" y="0" width="1000" height="300" fill="url(#wall)" />
+    <rect x="0" y="300" width="1000" height="140" fill="url(#floor)" />
+    <rect x="0" y="296" width="1000" height="8" fill="#c9a374" />
+
+    <!-- window -->
+    <g class="window">
+        <rect x="140" y="40" width="200" height="120" rx="10" fill="#cfeaf5" stroke="#b78b5e" stroke-width="6" />
+        <path d="M240 40v120M140 100h200" stroke="#b78b5e" stroke-width="4" />
+        <circle class="sun" cx="300" cy="72" r="14" fill="#ffd45e" />
+    </g>
+
+    <!-- sign -->
+    <g class="sign">
+        <rect x="395" y="22" width="210" height="46" rx="12" fill="#5b3a29" />
+        <SvgText x="500" y="53" text-anchor="middle" class="sign-text">COFFEE SHOP</SvgText>
+    </g>
+
+    <!-- door -->
+    <g class="door">
+        <rect x="14" y="170" width="84" height="132" rx="8" fill="#a47148" stroke="#7d5232" stroke-width="4" />
+        <rect x="28" y="186" width="56" height="48" rx="6" fill="#cfeaf5" />
+        <circle cx="86" cy="248" r="4" fill="#ffd45e" />
+        <SvgText x="56" y="160" text-anchor="middle" class="label">DOOR</SvgText>
+    </g>
+
+    <!-- cashier -->
+    <g class="cashier">
+        <rect x="318" y="262" width="150" height="92" rx="10" fill="#7d5232" />
+        <rect x="318" y="254" width="150" height="16" rx="8" fill="#a47148" />
+        <rect x="372" y="222" width="46" height="34" rx="5" fill="#3a2a22" />
+        <rect x="378" y="228" width="34" height="14" rx="3" fill="#8be3b0" />
+        <circle cx="440" cy="206" r="15" fill="#f2c9a0" />
+        <rect x="428" y="218" width="24" height="30" rx="9" fill="#e86a4a" />
+        <circle cx="436" cy="204" r="1.8" fill="#3a2a22" />
+        <circle cx="445" cy="204" r="1.8" fill="#3a2a22" />
+        <path d="M436 211q5 4 10 0" stroke="#3a2a22" stroke-width="1.8" fill="none" />
+        <SvgText x="393" y="378" text-anchor="middle" class="label">TAKE ORDER</SvgText>
+        <rect x="334" y="288" width="118" height="9" rx="4.5" fill="#ffffff22" />
+        <rect x="334" y="288" width="@Num(118 * Shop.CashierProgress)" height="9" rx="4.5" fill="#8be3b0" />
+    </g>
+
+    <!-- ticket rail -->
+    <g class="rail">
+        <rect x="470" y="104" width="230" height="9" rx="4.5" class="rail-bar" />
+        <path d="M470 113v22M700 113v22" class="rail-leg" />
+        <SvgText x="585" y="92" text-anchor="middle" class="label rail-label">TICKET RAIL @(Shop.Config.SafetyNet ? "(safety net ON)" : "(not used)")</SvgText>
+        @if (!Shop.Config.SafetyNet)
+        {
+            <SvgText x="585" y="152" text-anchor="middle" class="rail-hint">Orders are only shouted across the shop</SvgText>
+        }
+    </g>
+
+    <!-- barista -->
+    <g class="barista-station">
+        <rect x="738" y="262" width="136" height="92" rx="10" fill="#7d5232" />
+        <rect x="738" y="254" width="136" height="16" rx="8" fill="#a47148" />
+
+        <g class="machine">
+            <rect x="790" y="196" width="76" height="60" rx="8" fill="#3a2a22" />
+            <rect x="784" y="188" width="88" height="14" rx="6" fill="#5c463a" />
+            <circle cx="806" cy="224" r="5" fill="#ffd45e" />
+            <circle class="machine-light" cx="826" cy="224" r="5" />
+            <rect x="808" y="238" width="36" height="8" rx="3" fill="#6b5446" />
+            <g class="steam-group">
+                <path class="steam-puff p1" d="M818 184c-6-10 6-14 0-24" />
+                <path class="steam-puff p2" d="M832 184c-6-10 6-14 0-24" />
+                <path class="steam-puff p3" d="M846 184c-6-10 6-14 0-24" />
+            </g>
+            <rect x="788" y="172" width="80" height="8" rx="4" fill="#ffffff2e" />
+            <rect x="788" y="172" width="@Num(80 * Shop.BrewProgress)" height="8" rx="4" fill="#ffb347" />
+        </g>
+
+        <g class="barista" transform="translate(752 214)">
+            <g class="barista-body">
+                <rect x="-16" y="16" width="32" height="38" rx="12" fill="#6e8f6a" />
+                <rect x="-12" y="22" width="24" height="30" rx="8" fill="#fff6e6" />
+                <circle r="17" fill="#f2c9a0" />
+                <path d="M-18 -4q18 -26 36 0z" fill="#3a2a22" />
+                @if (Shop.BaristaCrashed)
+                {
+                    <path d="M-9 -5l5 5m0 -5l-5 5M4 -5l5 5m0 -5l-5 5" class="dead-eyes" />
+                    <path d="M-5 9q5 -5 10 0" class="mouth" />
+                }
+                else
+                {
+                    <circle cx="-5" cy="-1" r="2" fill="#3a2a22" />
+                    <circle cx="5" cy="-1" r="2" fill="#3a2a22" />
+                    <path d="M-5 6q5 5 10 0" class="mouth" />
+                }
+            </g>
+            @if (Shop.BaristaCrashed)
+            {
+                <g class="dizzy">
+                    <path class="star st1" d="M0 -30l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" />
+                    <path class="star st2" d="M0 -30l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" />
+                    <path class="star st3" d="M0 -30l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" />
+                </g>
+            }
+        </g>
+
+        <SvgText x="806" y="378" text-anchor="middle" class="label">BARISTA</SvgText>
+        @if (Shop.BaristaCrashed)
+        {
+            <g class="reboot">
+                <rect x="700" y="150" width="150" height="26" rx="13" />
+                <SvgText x="775" y="168" text-anchor="middle">Rebooting... @Shop.BaristaRecoversIn.ToString("0.0", CultureInfo.InvariantCulture)s</SvgText>
+            </g>
+        }
+    </g>
+
+    <!-- the barista's memory -->
+    @if (!Shop.Config.SafetyNet || _remembered > 0)
+    {
+        <g class="cloud @(_remembered > 0 ? "has-orders" : "")">
+            <ellipse cx="760" cy="100" rx="38" ry="22" />
+            <ellipse cx="800" cy="84" rx="40" ry="26" />
+            <ellipse cx="846" cy="98" rx="38" ry="22" />
+            <ellipse cx="808" cy="112" rx="52" ry="18" />
+            <circle cx="778" cy="138" r="6" />
+            <circle cx="768" cy="152" r="3.5" />
+            <SvgText x="805" y="68" text-anchor="middle" class="cloud-label">IN THE BARISTA'S HEAD</SvgText>
+        </g>
+    }
+
+    <!-- pickup -->
+    <g class="pickup">
+        <rect x="880" y="276" width="112" height="78" rx="10" fill="#7d5232" />
+        <rect x="880" y="268" width="112" height="16" rx="8" fill="#a47148" />
+        <SvgText x="936" y="378" text-anchor="middle" class="label">PICKUP</SvgText>
+    </g>
+
+    @if (_waitingInLine > 7)
+    {
+        <SvgText x="58" y="330" text-anchor="middle" class="more">+@(_waitingInLine - 7) more waiting</SvgText>
+    }
+
+    <!-- the orders and customers -->
+    @foreach (var order in Shop.Orders)
+    {
+        var (x, y) = Position(order);
+        <g @key="order.Id" class="tok @TokenClass(order)" style="transform: translate(@(Num(x))px, @(Num(y))px)">
+            @switch (order.Stage)
+            {
+                case OrderStage.Queueing:
+                case OrderStage.AtCashier:
+                    <g class="person">
+                        <rect x="-12" y="14" width="24" height="26" rx="9" fill="@Shirt(order)" />
+                        <circle r="15" fill="#f2c9a0" />
+                        @if (order.IsRepeat)
+                        {
+                            <path d="M-10 -8l7 3M10 -8l-7 3" class="brow" />
+                            <circle cx="-5" cy="-1" r="1.9" fill="#3a2a22" />
+                            <circle cx="5" cy="-1" r="1.9" fill="#3a2a22" />
+                            <path d="M-5 8q5 -5 10 0" class="mouth" />
+                            <circle cx="-10" cy="4" r="3" class="cheek" />
+                            <circle cx="10" cy="4" r="3" class="cheek" />
+                        }
+                        else
+                        {
+                            <circle cx="-5" cy="-2" r="1.9" fill="#3a2a22" />
+                            <circle cx="5" cy="-2" r="1.9" fill="#3a2a22" />
+                            <path d="M-5 5q5 5 10 0" class="mouth" />
+                        }
+                        <SvgText class="num" y="32">#@order.TicketId</SvgText>
+                    </g>
+                    break;
+
+                case OrderStage.OnRail:
+                case OrderStage.InBaristasHead:
+                    <g class="ticket @(order.Stage == OrderStage.InBaristasHead ? "mini" : "")">
+                        <rect x="-5" y="-9" width="10" height="9" rx="2" class="clip" />
+                        <rect x="-12" y="-2" width="24" height="32" rx="3" class="paper" />
+                        <path d="M-7 6h14M-7 11h14M-7 16h9" class="lines" />
+                        <SvgText class="num" y="27">#@order.TicketId</SvgText>
+                    </g>
+                    break;
+
+                case OrderStage.Shouted:
+                    <g class="bubble">
+                        <rect x="-22" y="-16" width="44" height="26" rx="12" />
+                        <path d="M-6 10l-4 10 12 -10z" />
+                        <SvgText y="3" class="bubble-text">#@order.TicketId!</SvgText>
+                    </g>
+                    break;
+
+                case OrderStage.Brewing:
+                    <g class="cup">
+                        <path d="M-14 -14h28l-4 28a6 6 0 0 1-6 5h-8a6 6 0 0 1-6-5z" class="cup-body" />
+                        <path d="M14 -8h4a6 6 0 0 1 0 12h-5" class="cup-handle" />
+                        <SvgText y="9" class="cup-num">#@order.TicketId</SvgText>
+                    </g>
+                    break;
+
+                case OrderStage.Ready:
+                    <g class="cup ready">
+                        <path d="M-14 -14h28l-4 28a6 6 0 0 1-6 5h-8a6 6 0 0 1-6-5z" class="cup-body" />
+                        <path d="M14 -8h4a6 6 0 0 1 0 12h-5" class="cup-handle" />
+                        <g class="tick"><circle cx="16" cy="-18" r="10" /><path d="M11 -18l4 4 7-8" /></g>
+                    </g>
+                    break;
+
+                case OrderStage.Lost:
+                    <g class="poof">
+                        <circle cx="0" cy="0" r="14" />
+                        <circle cx="16" cy="-6" r="9" />
+                        <circle cx="-15" cy="-4" r="10" />
+                        <path d="M-7 -7l14 14m0 -14l-14 14" class="x-mark" />
+                    </g>
+                    break;
+
+                case OrderStage.Merged:
+                    <g class="ticket merged">
+                        <rect x="-12" y="-2" width="24" height="32" rx="3" class="paper" />
+                        <path d="M-7 6h14M-7 11h14" class="lines" />
+                        <g class="stamp" transform="rotate(-16 0 14)">
+                            <rect x="-26" y="6" width="52" height="16" rx="3" />
+                            <SvgText y="18">SAME ORDER</SvgText>
+                        </g>
+                    </g>
+                    break;
+            }
+        </g>
+    }
+</svg>
+
+@code {
+    private static readonly string[] Shirts = { "#e86a4a", "#4a90d9", "#8f6bd6", "#2fa37a", "#e0a526", "#d9577a" };
+
+    private int _remembered;
+    private int _waitingInLine;
+    private Dictionary<int, int> _headSlot = new();
+
+    [Parameter, EditorRequired]
+    public Shop Shop { get; set; } = default!;
+
+    protected override void OnParametersSet() => Index();
+
+    protected override bool ShouldRender() => true;
+
+    private void Index()
+    {
+        _headSlot = new Dictionary<int, int>();
+        var slot = 0;
+        foreach (var o in Shop.Orders.Where(o => o.Stage == OrderStage.InBaristasHead).OrderBy(o => o.Id))
+        {
+            _headSlot[o.Id] = slot++;
+        }
+
+        _remembered = slot;
+        _waitingInLine = Shop.Orders.Count(o => o.Stage == OrderStage.Queueing);
+    }
+
+    private (double X, double Y) Position(Order o)
+    {
+        switch (o.Stage)
+        {
+            case OrderStage.Queueing:
+                return (290 - Math.Min(o.LinePosition, 6) * 44, 318);
+
+            case OrderStage.AtCashier:
+                return (350, 306);
+
+            case OrderStage.OnRail:
+                return (486 + Math.Min(o.RailSlot, 8) * 24, 118);
+
+            case OrderStage.Shouted:
+            {
+                var p = Math.Clamp(o.StageAge / Math.Max(0.1, Shop.Config.ShoutSeconds), 0, 1);
+                return (470 + p * 250, 236 - Math.Sin(p * Math.PI) * 70);
+            }
+
+            case OrderStage.InBaristasHead:
+                return (752 + (_headSlot.TryGetValue(o.Id, out var s) ? Math.Min(s, 5) : 0) * 24, 98);
+
+            case OrderStage.Brewing:
+                return (827, 292);
+
+            case OrderStage.Ready:
+                return (936, 250 - Math.Min(o.StageAge, 1) * 14);
+
+            case OrderStage.Lost:
+                return (780, 232);
+
+            case OrderStage.Merged:
+                return (545, 118);
+
+            default:
+                return (0, 0);
+        }
+    }
+
+    private static string TokenClass(Order o) => o.Stage switch
+    {
+        OrderStage.Queueing or OrderStage.AtCashier => o.IsRepeat ? "t-person angry" : "t-person",
+        OrderStage.OnRail => "t-ticket",
+        OrderStage.InBaristasHead => "t-ticket t-mini",
+        OrderStage.Shouted => "t-bubble",
+        OrderStage.Brewing => "t-cup",
+        OrderStage.Ready => "t-cup t-ready",
+        OrderStage.Lost => "t-lost",
+        OrderStage.Merged => "t-merged",
+        _ => string.Empty,
+    };
+
+    private static string Shirt(Order o) => Shirts[o.TicketId % Shirts.Length];
+
+    private static string Num(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
+
+    private string Description() =>
+        $"An animated coffee shop. {Shop.Orders.Count} orders are on screen. The barista is {(Shop.BaristaCrashed ? "crashed" : "working")}. " +
+        $"The safety net is {(Shop.Config.SafetyNet ? "on" : "off")}.";
+}

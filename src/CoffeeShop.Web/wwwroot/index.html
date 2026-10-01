@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coffee Shop Rush: why your orders (almost) never get lost</title>
+    <meta name="description" content="A tiny animated coffee shop that shows how real software keeps your orders safe when something crashes. Break it, then fix it." />
+    <meta name="theme-color" content="#5b3a29" />
+    <meta property="og:title" content="Coffee Shop Rush" />
+    <meta property="og:description" content="Crash the barista and watch what happens to the orders. Then turn on the safety net." />
+    <meta property="og:type" content="website" />
+    <base href="/" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235b3a29'/%3E%3Cpath d='M18 26h24v12a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z' fill='%23fff1dc'/%3E%3Cpath d='M42 29h4a5 5 0 0 1 0 10h-4' fill='none' stroke='%23fff1dc' stroke-width='3'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/app.css" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="boot" role="status" aria-live="polite">
+            <div class="boot-cup" aria-hidden="true">
+                <span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>
+                <div class="cup"><div class="handle"></div></div>
+            </div>
+            <p class="boot-title">Coffee Shop Rush</p>
+            <p class="boot-sub">Warming up the espresso machine&hellip;</p>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Something went wrong. <a href="" class="reload">Reload</a>
+        <span class="dismiss">&#x2715;</span>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>
