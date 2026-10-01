@@ -149,7 +149,7 @@
     @for (var i = 0; i < Math.Min(_waiters.Count, MaxWaiters); i++)
     {
         var w = _waiters[i];
-        <g @key="w.TicketId" class="waiter-pos" style="transform: translate(@(Num(962 - i * 44))px, 392px)">
+        <g @key="@("waiter-" + w.TicketId)" class="waiter-pos" style="transform: translate(@(Num(962 - i * 44))px, 392px)">
             <g class="waiter @(w.Forgotten ? "forgotten" : w.Impatient ? "angry" : "")">
                 <rect x="-10" y="11" width="20" height="22" rx="8" fill="@ShirtFor(w.TicketId)" />
                 <circle r="12.5" fill="#f2c9a0" />
@@ -196,7 +196,7 @@
     @foreach (var order in Shop.Orders)
     {
         var (x, y) = Position(order);
-        <g @key="order.Id" class="tok @TokenClass(order)" style="transform: translate(@(Num(x))px, @(Num(y))px)">
+        <g @key="@("order-" + order.Id)" class="tok @TokenClass(order)" style="transform: translate(@(Num(x))px, @(Num(y))px)">
             @switch (order.Stage)
             {
                 case OrderStage.Queueing:
