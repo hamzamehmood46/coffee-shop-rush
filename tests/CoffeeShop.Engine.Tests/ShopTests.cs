@@ -274,6 +274,84 @@ public class ShopTests
     }
 }
 
+public class PickupWaiterTests
+{
+    private const double Step = 0.05;
+
+    private static void Run(Shop shop, double seconds)
+    {
+        for (var i = 0; i < (int)Math.Round(seconds / Step); i++)
+        {
+            shop.Tick(Step);
+        }
+    }
+
+    [Fact]
+    public void A_customer_in_the_cashiers_line_is_not_yet_waiting_at_pickup()
+    {
+        var shop = new Shop(new ShopConfig { OrdersPerMinute = 0 });
+        shop.PlaceOrder();
+        Run(shop, 0.5);
+
+        Assert.Empty(shop.PickupWaiters);
+    }
+
+    [Fact]
+    public void A_customer_who_has_ordered_waits_at_pickup_until_the_drink_is_ready()
+    {
+        var shop = new Shop(new ShopConfig { OrdersPerMinute = 0 });
+        shop.PlaceOrder();
+
+        Run(shop, 3);
+        var waiter = Assert.Single(shop.PickupWaiters);
+        Assert.False(waiter.Forgotten);
+        Assert.False(waiter.Impatient);
+
+        Run(shop, 3);
+        Assert.Empty(shop.PickupWaiters);
+    }
+
+    [Fact]
+    public void Without_the_safety_net_a_crash_leaves_customers_waiting_for_an_order_that_no_longer_exists()
+    {
+        var shop = new Shop(new ShopConfig { OrdersPerMinute = 0, PatienceSeconds = 100 });
+        shop.PlaceOrder();
+        Run(shop, 3);
+
+        shop.CrashBarista();
+        Run(shop, 1.3); // the lost order clears off the screen
+
+        var waiter = Assert.Single(shop.PickupWaiters);
+        Assert.True(waiter.Forgotten);
+    }
+
+    [Fact]
+    public void With_the_safety_net_a_crash_does_not_make_anyone_forgotten()
+    {
+        var shop = new Shop(new ShopConfig { OrdersPerMinute = 0, SafetyNet = true, PatienceSeconds = 100 });
+        shop.PlaceOrder();
+        Run(shop, 3);
+
+        shop.CrashBarista();
+        Run(shop, 1.3);
+
+        Assert.All(shop.PickupWaiters, w => Assert.False(w.Forgotten));
+    }
+
+    [Fact]
+    public void A_waiting_customer_becomes_impatient_after_their_patience_runs_out()
+    {
+        var shop = new Shop(new ShopConfig { OrdersPerMinute = 0, PatienceSeconds = 2, BrewSeconds = 30 });
+        shop.PlaceOrder();
+
+        Run(shop, 2.5); // they ask again, so they are back in the cashier's line
+        Assert.Empty(shop.PickupWaiters);
+
+        Run(shop, 2); // the second order has gone through, and they wait at pickup again
+        Assert.True(Assert.Single(shop.PickupWaiters).Impatient);
+    }
+}
+
 internal static class ShopTestExtensions
 {
     public static int Events(this Shop shop, string fragment) =>

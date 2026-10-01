@@ -145,6 +145,48 @@
         <SvgText x="936" y="378" text-anchor="middle" class="label">PICKUP</SvgText>
     </g>
 
+    <!-- customers who have ordered and are waiting for a drink -->
+    @for (var i = 0; i < Math.Min(_waiters.Count, MaxWaiters); i++)
+    {
+        var w = _waiters[i];
+        <g @key="w.TicketId" class="waiter-pos" style="transform: translate(@(Num(962 - i * 44))px, 392px)">
+            <g class="waiter @(w.Forgotten ? "forgotten" : w.Impatient ? "angry" : "")">
+                <rect x="-10" y="11" width="20" height="22" rx="8" fill="@ShirtFor(w.TicketId)" />
+                <circle r="12.5" fill="#f2c9a0" />
+                @if (w.Forgotten)
+                {
+                    <circle cx="-4.5" cy="-1" r="1.6" fill="#3a2a22" />
+                    <circle cx="4.5" cy="-1" r="1.6" fill="#3a2a22" />
+                    <path d="M-4.5 7q4.5 -4 9 0" class="mouth" />
+                    <g class="qmark">
+                        <circle cx="0" cy="-30" r="11" />
+                        <SvgText x="0" y="-25">?</SvgText>
+                    </g>
+                }
+                else if (w.Impatient)
+                {
+                    <path d="M-8 -7l6 2.5M8 -7l-6 2.5" class="brow" />
+                    <circle cx="-4.5" cy="-1" r="1.6" fill="#3a2a22" />
+                    <circle cx="4.5" cy="-1" r="1.6" fill="#3a2a22" />
+                    <path d="M-4.5 7q4.5 -4 9 0" class="mouth" />
+                    <circle cx="-8.5" cy="3.5" r="2.6" class="cheek" />
+                    <circle cx="8.5" cy="3.5" r="2.6" class="cheek" />
+                }
+                else
+                {
+                    <circle cx="-4.5" cy="-2" r="1.6" fill="#3a2a22" />
+                    <circle cx="4.5" cy="-2" r="1.6" fill="#3a2a22" />
+                    <path d="M-4.5 4q4.5 4.5 9 0" class="mouth" />
+                }
+                <SvgText class="num" y="28">#@w.TicketId</SvgText>
+            </g>
+        </g>
+    }
+    @if (_waiters.Count > MaxWaiters)
+    {
+        <SvgText x="740" y="428" class="more">+@(_waiters.Count - MaxWaiters) more waiting at pickup</SvgText>
+    }
+
     @if (_waitingInLine > 7)
     {
         <SvgText x="58" y="330" text-anchor="middle" class="more">+@(_waitingInLine - 7) more waiting</SvgText>
@@ -221,6 +263,7 @@
                         <circle cx="16" cy="-6" r="9" />
                         <circle cx="-15" cy="-4" r="10" />
                         <path d="M-7 -7l14 14m0 -14l-14 14" class="x-mark" />
+                        <SvgText y="-22" class="lost-text">LOST!</SvgText>
                     </g>
                     break;
 
@@ -242,6 +285,9 @@
 @code {
     private static readonly string[] Shirts = { "#e86a4a", "#4a90d9", "#8f6bd6", "#2fa37a", "#e0a526", "#d9577a" };
 
+    private const int MaxWaiters = 7;
+
+    private IReadOnlyList<PickupWaiter> _waiters = Array.Empty<PickupWaiter>();
     private int _remembered;
     private int _waitingInLine;
     private Dictionary<int, int> _headSlot = new();
@@ -264,6 +310,7 @@
 
         _remembered = slot;
         _waitingInLine = Shop.Orders.Count(o => o.Stage == OrderStage.Queueing);
+        _waiters = Shop.PickupWaiters;
     }
 
     private (double X, double Y) Position(Order o)
@@ -318,7 +365,9 @@
         _ => string.Empty,
     };
 
-    private static string Shirt(Order o) => Shirts[o.TicketId % Shirts.Length];
+    private static string Shirt(Order o) => ShirtFor(o.TicketId);
+
+    private static string ShirtFor(int ticketId) => Shirts[ticketId % Shirts.Length];
 
     private static string Num(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
 

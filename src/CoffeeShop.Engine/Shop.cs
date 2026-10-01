@@ -73,6 +73,36 @@ public sealed class Shop
         }
     }
 
+    /// <summary>
+    /// Customers who have finished ordering and are now waiting for their first drink, oldest first.
+    /// Someone still in the cashier's line is not listed, because they have not ordered yet.
+    /// </summary>
+    public IReadOnlyList<PickupWaiter> PickupWaiters
+    {
+        get
+        {
+            var waiters = new List<PickupWaiter>();
+            foreach (var ticket in _tickets.Values.OrderBy(t => t.Id))
+            {
+                if (ticket.Drinks > 0)
+                {
+                    continue;
+                }
+
+                var live = _orders.Where(o => o.TicketId == ticket.Id && !o.IsFinished).ToList();
+                if (live.Any(o => o.Stage is OrderStage.Queueing or OrderStage.AtCashier))
+                {
+                    continue;
+                }
+
+                var waited = Clock - ticket.PlacedAt;
+                waiters.Add(new PickupWaiter(ticket.Id, waited, waited >= Config.PatienceSeconds, live.Count == 0));
+            }
+
+            return waiters;
+        }
+    }
+
     /// <summary>A new customer walks up and orders.</summary>
     public Order PlaceOrder()
     {

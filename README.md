@@ -43,7 +43,7 @@ tests/                  xUnit tests for the engine
 dotnet test tests/CoffeeShop.Engine.Tests
 ```
 
-The 18 tests cover the behaviour a visitor actually sees, including:
+The 23 tests cover the behaviour a visitor actually sees, including:
 
 - a crash without the safety net loses the drink being made and everything the barista was remembering;
 - a crash with the safety net loses nothing, and the drink is made after the restart;
