@@ -134,6 +134,7 @@ input[type="range"] { width: 100%; accent-color: var(--orange); }
 /* ---------- the cafe scene ---------- */
 .scene { display: block; width: 100%; height: auto; border-radius: 16px; }
 .scene .label { font: 800 11px var(--body); letter-spacing: .14em; fill: var(--muted); }
+.scene .label.on-wood { fill: #ffe6c4; }
 .scene .sign-text { font: 600 22px var(--display); letter-spacing: .1em; fill: #fff1dc; }
 .scene .sun { animation: glow 4s ease-in-out infinite; }
 .scene .rail-bar { fill: var(--brown-2); }
